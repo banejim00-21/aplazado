@@ -1,0 +1,36 @@
+[
+  {"id":"main_flow","type":"tab","label":"ESP32 Leviatanes"},
+  {"id":"mqtt_broker","type":"mqtt-broker","name":"Mosquitto","broker":"test.mosquitto.org","port":"1883","clientid":"nodered_leviatanes","autoConnect":true,"usetls":false},
+  {"id":"ui_tab","type":"ui_tab","name":"📊 Control ESP32","icon":"dashboard","order":1},
+  {"id":"ui_group_sensors","type":"ui_group","name":"🌡️ Sensores","tab":"ui_tab","order":1,"width":"6"},
+  {"id":"ui_group_charts","type":"ui_group","name":"📈 Históricos","tab":"ui_tab","order":2,"width":"6"},
+  {"id":"ui_group_relays","type":"ui_group","name":"⚡ Relés","tab":"ui_tab","order":3,"width":"12"},
+  {"id":"ui_group_control","type":"ui_group","name":"🎮 Control","tab":"ui_tab","order":4,"width":"12"},
+  
+  {"id":"mqtt_in","type":"mqtt in","z":"main_flow","name":"","topic":"leviatanes/esp32/sensors","broker":"mqtt_broker","x":110,"y":100,"wires":[["parse"]]},
+  {"id":"parse","type":"json","z":"main_flow","name":"","x":250,"y":100,"wires":[["split"]]},
+  {"id":"split","type":"function","z":"main_flow","name":"","func":"return [{payload:msg.payload.temperature},{payload:msg.payload.humidity},{payload:msg.payload.motor},{payload:msg.payload.foco1},{payload:msg.payload.foco2},{payload:msg.payload.mode}];","outputs":6,"x":390,"y":100,"wires":[["temp_g","temp_c"],["hum_g","hum_c"],["motor_led"],["foco1_led"],["foco2_led"],["mode_txt"]]},
+  
+  {"id":"temp_g","type":"ui_gauge","z":"main_flow","name":"","group":"ui_group_sensors","order":1,"width":6,"height":4,"gtype":"gage","title":"Temperatura °C","label":"°C","format":"{{value}}","min":0,"max":"40","colors":["#00b3ff","#00e600","#ff0000"],"seg1":"18","seg2":"25","x":600,"y":60,"wires":[]},
+  {"id":"hum_g","type":"ui_gauge","z":"main_flow","name":"","group":"ui_group_sensors","order":2,"width":6,"height":4,"gtype":"gage","title":"Humedad %","label":"%","format":"{{value}}","min":0,"max":"100","colors":["#ff9900","#00e600","#0099ff"],"seg1":"40","seg2":"80","x":600,"y":100,"wires":[]},
+  
+  {"id":"temp_c","type":"ui_chart","z":"main_flow","name":"","group":"ui_group_charts","order":1,"width":6,"height":4,"label":"Temperatura","chartType":"line","legend":"false","xformat":"HH:mm:ss","interpolate":"linear","nodata":"","dot":false,"ymin":"0","ymax":"40","x":600,"y":160,"wires":[[]]},
+  {"id":"hum_c","type":"ui_chart","z":"main_flow","name":"","group":"ui_group_charts","order":2,"width":6,"height":4,"label":"Humedad","chartType":"line","legend":"false","xformat":"HH:mm:ss","interpolate":"linear","nodata":"","dot":false,"ymin":"0","ymax":"100","x":600,"y":200,"wires":[[]]},
+  
+  {"id":"motor_led","type":"ui_led","z":"main_flow","name":"","group":"ui_group_relays","order":1,"width":3,"height":1,"label":"🔌 Motor","labelPlacement":"left","colorForValue":[{"color":"#555","value":"false"},{"color":"#0f0","value":"true"}],"x":600,"y":260,"wires":[]},
+  {"id":"foco1_led","type":"ui_led","z":"main_flow","name":"","group":"ui_group_relays","order":2,"width":3,"height":1,"label":"💡 Foco1","labelPlacement":"left","colorForValue":[{"color":"#555","value":"false"},{"color":"#ff0","value":"true"}],"x":600,"y":300,"wires":[]},
+  {"id":"foco2_led","type":"ui_led","z":"main_flow","name":"","group":"ui_group_relays","order":3,"width":3,"height":1,"label":"💡 Foco2","labelPlacement":"left","colorForValue":[{"color":"#555","value":"false"},{"color":"#ff0","value":"true"}],"x":600,"y":340,"wires":[]},
+  
+  {"id":"mode_txt","type":"ui_text","z":"main_flow","group":"ui_group_control","order":1,"width":4,"height":1,"name":"","label":"Modo:","format":"{{msg.payload}}","layout":"row-spread","x":600,"y":380,"wires":[]},
+  
+  {"id":"mode_sw","type":"ui_switch","z":"main_flow","name":"","group":"ui_group_control","order":2,"width":6,"height":1,"label":"Modo","on":"AUTO","off":"MANUAL","x":110,"y":480,"wires":[["mode_prep"]]},
+  {"id":"mode_prep","type":"function","z":"main_flow","name":"","func":"var m=msg.payload?'auto':'manual';return{payload:JSON.stringify({mode:m})};","x":260,"y":480,"wires":[["mqtt_mode"]]},
+  {"id":"mqtt_mode","type":"mqtt out","z":"main_flow","name":"","topic":"leviatanes/esp32/mode","broker":"mqtt_broker","x":430,"y":480,"wires":[]},
+  
+  {"id":"motor_sw","type":"ui_switch","z":"main_flow","name":"","group":"ui_group_control","order":3,"width":3,"height":1,"label":"Motor","on":true,"off":false,"x":110,"y":560,"wires":[["relay_prep"]]},
+  {"id":"foco1_sw","type":"ui_switch","z":"main_flow","name":"","group":"ui_group_control","order":4,"width":3,"height":1,"label":"Foco1","on":true,"off":false,"x":110,"y":600,"wires":[["relay_prep"]]},
+  {"id":"foco2_sw","type":"ui_switch","z":"main_flow","name":"","group":"ui_group_control","order":5,"width":3,"height":1,"label":"Foco2","on":true,"off":false,"x":110,"y":640,"wires":[["relay_prep"]]},
+  
+  {"id":"relay_prep","type":"function","z":"main_flow","name":"","func":"var r=msg.topic||'motor';var c={};c[r]=msg.payload;return{payload:JSON.stringify(c)};","x":260,"y":600,"wires":[["mqtt_ctrl"]]},
+  {"id":"mqtt_ctrl","type":"mqtt out","z":"main_flow","name":"","topic":"leviatanes/esp32/control","broker":"mqtt_broker","x":430,"y":600,"wires":[]}
+]
