@@ -1,0 +1,11 @@
+{
+  "name": "nodered-esp32",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node-red flows.json"
+  },
+  "dependencies": {
+    "node-red": "3.1.0",
+    "node-red-dashboard": "3.6.0"
+  }
+}
