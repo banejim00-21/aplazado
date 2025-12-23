@@ -1,0 +1,16 @@
+{
+  "name": "esp32-control-leviatanes",
+  "version": "1.0.0",
+  "description": "Sistema Control ESP32 - Leviatanes",
+  "main": "index.js",
+  "scripts": {
+    "start": "node-red --settings settings.js flows.json"
+  },
+  "dependencies": {
+    "node-red": "^3.1.0",
+    "node-red-dashboard": "^3.6.0"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
